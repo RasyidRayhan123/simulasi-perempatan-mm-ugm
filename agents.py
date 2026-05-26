@@ -66,19 +66,23 @@ class VehicleAgent(mesa.Agent):
             self._exit()
             return
 
-        # C. Cek lampu (sebelum masuk persimpangan)
-        if not in_yb:
+        # C. Cek lampu (Hanya berhenti jika sudah sampai di garis berhenti)
+        if self._at_stopline(current_pos):
             green_dir = self.model.get_green_direction()
-            if (self.model.scenario == "B"
-                    and self.origin == "Utara"
-                    and self.dest == "Kiri"):
-                # Skenario B: belok kiri hanya saat fase Utara atau Timur
+            
+            # Skenario A: Utara belok kiri menerobos lampu merah
+            if self.model.scenario == "A" and self.origin == "Utara" and self.dest == "Kiri":
+                pass 
+                
+            # Skenario B: Utara belok kiri wajib ikut lampu
+            elif self.model.scenario == "B" and self.origin == "Utara" and self.dest == "Kiri":
                 if green_dir not in ("Utara", "Timur"):
                     self.wait_time += 1
                     return
+                    
+            # Aturan normal untuk lajur dan kendaraan lainnya
             else:
-                # Umum: berhenti saat lampu merah dan belum dekat persimpangan
-                if green_dir != self.origin and not self._near_intersection(current_pos):
+                if green_dir != self.origin:
                     self.wait_time += 1
                     return
 
@@ -119,6 +123,16 @@ class VehicleAgent(mesa.Agent):
     # ------------------------------------------------------------------
     # HELPERS
     # ------------------------------------------------------------------
+    def _at_stopline(self, pos):
+        """Mengecek apakah kendaraan tepat berada di garis berhenti lampu merah."""
+        stoplines = {
+            "Utara": (13, 15),
+            "Barat": (9, 13),
+            "Selatan": (11, 9),
+            "Timur": (15, 11)
+        }
+        return pos == stoplines.get(self.origin)
+
     def _get_next_pos(self, current_pos):
         if not self.route:
             return None

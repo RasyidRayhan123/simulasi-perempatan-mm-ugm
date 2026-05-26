@@ -12,87 +12,74 @@ from agents import VehicleAgent
 # ── Konstanta ──────────────────────────────────────────────────────────
 GRID_SIZE = 25
 
-# Entry points (titik masuk)
+# Sistem Lajur Kiri (Kiri Jalan) - Indonesia
 ENTRY_POINTS = {
-    "Utara":   [(13, 0)],
-    "Barat":   [(0, 12)],
-    "Selatan": [(11, 24)],
-    "Timur":   [(24, 13)],
+    "Utara":   [(13, 24)], # Dari atas turun (Lajur Kiri: x=13)
+    "Barat":   [(0, 13)],  # Dari kiri ke kanan (Lajur Kiri: y=13)
+    "Selatan": [(11, 0)],  # Dari bawah naik (Lajur Kiri: x=11)
+    "Timur":   [(24, 11)], # Dari kanan ke kiri (Lajur Kiri: y=11)
 }
 
-# Exit points (titik keluar) – sengaja berbeda dari entry
-EXIT_COORDS = {
-    "Utara":   (13, 24),   # keluar bawah
-    "Barat":   (24, 12),   # keluar kanan
-    "Selatan": (11,  0),   # keluar atas
-    "Timur":   ( 0, 13),   # keluar kiri
-}
-
-CENTER    = (12, 12)
-YELLOW_BOX = [(x, y) for x in range(9, 16) for y in range(9, 16)]
-
+CENTER = (12, 12)
+# Yellow Box tepat di persimpangan (x: 10-14, y: 10-14)
+YELLOW_BOX = [(x, y) for x in range(10, 15) for y in range(10, 15)]
 
 def build_route(origin: str, dest: str) -> list:
-    """Rute (x,y) dari entry -> exit (Aturan Lajur Kiri Indonesia)."""
-    gs  = GRID_SIZE
+    """Rute (x,y) Presisi Lajur Kiri Tanpa Tabrakan Head-on."""
+    gs = GRID_SIZE
     ex, ey = ENTRY_POINTS[origin][0]
     
-    # Lajur: Utara-Selatan (x=13), Selatan-Utara (x=11)
-    # Lajur: Barat-Timur (y=12), Timur-Barat (y=13)
-
-    if origin == "Utara": # Masuk x=13, y=0 (bergerak y+)
-        approach = [(13, y) for y in range(ey, 10)]
+    if origin == "Utara": 
+        approach = [(13, y) for y in range(ey, 14, -1)]
         if dest == "Lurus":
-            body   = [(13, y) for y in range(10, 15)]
-            depart = [(13, y) for y in range(15, gs)]
-        elif dest == "Kiri":   # Ke Timur (masuk lajur y=12, bergerak x+)
-            body   = [(13, 10), (13, 11), (13, 12)] + [(x, 12) for x in range(14, gs)]
+            body   = [(13, y) for y in range(14, 9, -1)]
+            depart = [(13, y) for y in range(9, -1, -1)]
+        elif dest == "Kiri": # Ke Timur (masuk y=13)
+            body   = [(13, 14), (13, 13)] + [(x, 13) for x in range(14, gs)]
             depart = []
-        else:                  # Ke Barat (masuk lajur y=13, bergerak x-)
-            body   = [(13, 10), (13, 11), (13, 12), (13, 13)] + [(x, 13) for x in range(12, -1, -1)]
-            depart = []
-            
-    elif origin == "Barat": # Masuk x=0, y=12 (bergerak x+)
-        approach = [(x, 12) for x in range(ex, 10)]
-        if dest == "Lurus":
-            body   = [(x, 12) for x in range(10, 15)]
-            depart = [(x, 12) for x in range(15, gs)]
-        elif dest == "Kiri":   # Ke Utara (masuk lajur x=11, bergerak y-)
-            body   = [(10, 12), (11, 12)] + [(11, y) for y in range(11, -1, -1)]
-            depart = []
-        else:                  # Ke Selatan (masuk lajur x=13, bergerak y+)
-            body   = [(10, 12), (11, 12), (12, 12), (13, 12)] + [(13, y) for y in range(13, gs)]
-            depart = []
-            
-    elif origin == "Selatan": # Masuk x=11, y=24 (bergerak y-)
-        approach = [(11, y) for y in range(ey, 14, -1)]
-        if dest == "Lurus":
-            body   = [(11, y) for y in range(14, 9, -1)]
-            depart = [(11, y) for y in range(9, -1, -1)]
-        elif dest == "Kiri":   # Ke Barat (masuk lajur y=13, bergerak x-)
-            body   = [(11, 14), (11, 13)] + [(x, 13) for x in range(10, -1, -1)]
-            depart = []
-        else:                  # Ke Timur (masuk lajur y=12, bergerak x+)
-            body   = [(11, 14), (11, 13), (11, 12)] + [(x, 12) for x in range(12, gs)]
-            depart = []
-            
-    else:  # origin == "Timur" # Masuk x=24, y=13 (bergerak x-)
-        approach = [(x, 13) for x in range(ex, 14, -1)]
-        if dest == "Lurus":
-            body   = [(x, 13) for x in range(14, 9, -1)]
-            depart = [(x, 13) for x in range(9, -1, -1)]
-        elif dest == "Kiri":   # Ke Selatan (masuk lajur x=13, bergerak y+)
-            body   = [(14, 13), (13, 13)] + [(13, y) for y in range(14, gs)]
-            depart = []
-        else:                  # Ke Utara (masuk lajur x=11, bergerak y-)
-            body   = [(14, 13), (13, 13), (12, 13), (11, 13)] + [(11, y) for y in range(12, -1, -1)]
+        else: # Ke Barat (masuk y=11)
+            body   = [(13, 14), (13, 13), (13, 12), (13, 11)] + [(x, 11) for x in range(12, -1, -1)]
             depart = []
 
-    # Filter koordinat yang ada di luar grid untuk mencegah error
+    elif origin == "Selatan":
+        approach = [(11, y) for y in range(ey, 10)]
+        if dest == "Lurus":
+            body   = [(11, y) for y in range(10, 15)]
+            depart = [(11, y) for y in range(15, gs)]
+        elif dest == "Kiri": # Ke Barat (masuk y=11)
+            body   = [(11, 10), (11, 11)] + [(x, 11) for x in range(10, -1, -1)]
+            depart = []
+        else: # Ke Timur (masuk y=13)
+            body   = [(11, 10), (11, 11), (11, 12), (11, 13)] + [(x, 13) for x in range(12, gs)]
+            depart = []
+
+    elif origin == "Barat": 
+        approach = [(x, 13) for x in range(ex, 10)]
+        if dest == "Lurus":
+            body   = [(x, 13) for x in range(10, 15)]
+            depart = [(x, 13) for x in range(15, gs)]
+        elif dest == "Kiri": # Ke Utara (masuk x=11)
+            body   = [(10, 13), (11, 13)] + [(11, y) for y in range(14, gs)]
+            depart = []
+        else: # Ke Selatan (masuk x=13)
+            body   = [(10, 13), (11, 13), (12, 13), (13, 13)] + [(13, y) for y in range(12, -1, -1)]
+            depart = []
+
+    else: # Timur
+        approach = [(x, 11) for x in range(ex, 14, -1)]
+        if dest == "Lurus":
+            body   = [(x, 11) for x in range(14, 9, -1)]
+            depart = [(x, 11) for x in range(9, -1, -1)]
+        elif dest == "Kiri": # Ke Selatan (masuk x=13)
+            body   = [(14, 11), (13, 11)] + [(13, y) for y in range(10, -1, -1)]
+            depart = []
+        else: # Ke Utara (masuk x=11)
+            body   = [(14, 11), (13, 11), (12, 11), (11, 11)] + [(11, y) for y in range(12, gs)]
+            depart = []
+
     cleaned = []
     for pos in (approach + body + depart):
-        x, y = pos
-        if 0 <= x < gs and 0 <= y < gs:
+        if 0 <= pos[0] < gs and 0 <= pos[1] < gs:
             if not cleaned or cleaned[-1] != pos:
                 cleaned.append(pos)
     return cleaned

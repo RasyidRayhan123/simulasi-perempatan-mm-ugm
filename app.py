@@ -350,39 +350,33 @@ def render_grid(model: IntersectionModel):
 
 def _is_road(x, y):
     """Tentukan apakah sel (x,y) adalah jalan berdasarkan grid 25x25."""
-    # Lajur vertikal (Utara-Selatan) ada di x=11 dan x=13. Kita buat visual jalannya x=10 s.d 14
-    if 10 <= x <= 14:
-        return True
-    # Lajur horizontal (Barat-Timur) ada di y=12 dan y=13. Kita buat visual jalannya y=11 s.d 14
-    if 11 <= y <= 14:
-        return True
+    # Rentang jalan diperlebar dari x=10 sampai 14 dan y=10 sampai 14
+    if 10 <= x <= 14: return True
+    if 10 <= y <= 14: return True
     return False
 
 def _draw_road_markings(ax, gs):
-    """Gambar garis marka putih di tengah jalan."""
-    # Garis tengah horizontal (antara y=12 dan y=13)
-    ax.plot([0, gs], [12.5, 12.5], color="#334155", lw=0.5, linestyle="--", zorder=2)
-    # Garis tengah vertikal (antara x=11 dan x=13 -> di x=12)
-    ax.plot([12, 12], [0, gs], color="#334155", lw=0.5, linestyle="--", zorder=2)
+    """Gambar garis marka pembatas jalur."""
+    # Garis pembatas (median) di tengah jalan
+    ax.plot([0, gs], [12, 12], color="#334155", lw=1.2, linestyle="-", zorder=2)
+    ax.plot([12, 12], [0, gs], color="#334155", lw=1.2, linestyle="-", zorder=2)
     
-    # Border yellow box disinkronkan dengan model.py (9 sampai 15)
-    yb_rect = plt.Rectangle((9, 9), 7, 7,
+    # Border yellow box disinkronkan dari x=10 sampai 14 (lebar 5)
+    yb_rect = plt.Rectangle((10, 10), 5, 5,
                               facecolor="none", edgecolor="#fbbf24",
                               linewidth=1.2, linestyle="--", zorder=3)
     ax.add_patch(yb_rect)
-    # Label Yellow Box
     ax.text(12.5, 12.5, "YELLOW\nBOX", color="#fbbf2466",
             ha="center", va="center", fontsize=6.5,
             fontfamily="monospace", zorder=4)
 
 def _draw_traffic_lights(ax, lights):
-    """Gambar indikator lampu di titik masuk (entry points)."""
-    # Menyesuaikan dengan entry points: Utara masuk dari bawah (y=0), Selatan dari atas (y=24)
+    """Gambar indikator lampu persis di area entry points agar rapi."""
     positions = {
-        "Utara":   (13.5, 0.5, "↑U"),
-        "Barat":   (0.5, 11.5, "B→"),
-        "Selatan": (10.5, 24.5, "↓S"),
-        "Timur":   (24.5, 13.5, "←T"),
+        "Utara":   (13, 24, "U↓"),
+        "Barat":   (0, 13, "B→"),
+        "Selatan": (11, 0, "S↑"),
+        "Timur":   (24, 11, "←T"),
     }
     for direction, (lx, ly, label) in positions.items():
         clr = "#22c55e" if lights[direction] == "hijau" else "#ef4444"

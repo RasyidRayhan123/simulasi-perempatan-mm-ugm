@@ -5,7 +5,7 @@
 ### 1. Aktifkan virtual environment
 ```bash
 # Windows
-sim_env\Scriptsctivate
+sim_env\Scripts\activate
 
 # Mac/Linux
 source sim_env/bin/activate

@@ -150,13 +150,16 @@ class VehicleAgent(mesa.Agent):
         return abs(x - cx) <= 3 and abs(y - cy) <= 3
 
     def _check_conflict_traffic(self):
+        """Mengecek apakah ada kendaraan dari arah lain yang sedang menuju Jl. Agro (Timur)"""
         for cell in self.model.yellow_box_cells:
             for agent in self.model.grid.get_cell_list_contents([cell]):
-                if (isinstance(agent, VehicleAgent)
-                        and not agent.crossed
-                        and agent.origin in ("Barat", "Selatan")
-                        and agent.dest == "Kiri"):
-                    return True
+                if isinstance(agent, VehicleAgent) and not agent.crossed:
+                    # Konflik 1: Dari Barat (Teknika Sel) mau LURUS ke Timur (Agro)
+                    if agent.origin == "Barat" and agent.dest == "Lurus":
+                        return True
+                    # Konflik 2: Dari Selatan (Persatuan) mau belok KANAN ke Timur (Agro)
+                    if agent.origin == "Selatan" and agent.dest == "Kanan":
+                        return True
         return False
 
     def _exit(self):

@@ -1,5 +1,14 @@
 {
   "version": 2,
+  "commands": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "."
+      }
+    }
+  ],
   "builds": [
     {
       "src": "app.py",
